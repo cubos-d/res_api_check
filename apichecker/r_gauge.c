@@ -2,47 +2,69 @@
 #include <stdlib.h>
 #include <Python.h>
 
-typedef struct MemInfo {
-    unsigned long mem_total;
-    unsigned long mem_free;
-    unsigned long mem_avail; 
-    unsigned long buffers;
-    unsigned long cached;
-    unsigned long used;
-} MemInfo;
+typedef struct MemRow {
+    struct MemRow* previous;
+    char data[64];
+    unsigned long value;
+    struct MemRow* next;
+} MemRow;
 
-MemInfo* fetch_mem_data(char *filename);
-void print_mem_info(MemInfo info);
+typedef struct MemHM {
+    int num_of_elements;
+    int capacity;
+    MemRow** arr;
+} MemHM;
+
+MemRow* fetch_mem_data(char *filename);
+void print_meminfo_data(MemRow* head);
+void free_meminfo_list(MemRow* head);
 
 int main(int argc, char* argv[])
 {
-    MemInfo* mem_info = fetch_mem_data("/proc/meminfo");
-    print_mem_info(*mem_info);
-    free(mem_info);
+    MemRow* list_head = fetch_mem_data("/proc/meminfo");
+    print_meminfo_data(list_head);
+    free_meminfo_list(list_head);
     return 0;
 }
 
-MemInfo* fetch_mem_data(char *filename)
+MemRow* fetch_mem_data(char *filename)
 {
     FILE* info_stream = fopen(filename, "r");
-    MemInfo *mem_info = (MemInfo *)malloc(sizeof(MemInfo));
+    MemRow* head = (MemRow *)malloc(sizeof(MemRow));
+    head->previous = NULL;
+    MemRow* current = head;
     char buffer[256];
     int actual_l = 0;
     if (info_stream == NULL) return NULL;
     while (fgets(buffer, sizeof(buffer), info_stream)) {
-        if (sscanf(buffer, "MemTotal: %ld kB", &mem_info->mem_total) == 1) continue;
-        if (sscanf(buffer, "MemFree: %ld kB", &mem_info->mem_free) == 1) continue;
-        if (sscanf(buffer, "MemAvailable: %ld kB", &mem_info->mem_avail) == 1) continue;
-        if (sscanf(buffer, "Buffers: %ld kB", &mem_info->buffers) == 1) continue;
-        if (sscanf(buffer, "Cached: %ld kB", &mem_info->cached) == 1) continue;
+        if (sscanf(buffer, "%64[^:]: %ld kB", current->data, &current->value))
+        {
+            current->next = (MemRow *)malloc(sizeof(MemRow));
+            current = current->next;
+            current->next = NULL;
+        } else {
+            printf("Failed to format\n");
+        }
     }
     fclose(info_stream);
-    mem_info->used = mem_info->mem_total - mem_info->mem_free - mem_info->buffers - mem_info->cached;
-    return mem_info;
+    return head;
 }
 
-void print_mem_info(MemInfo info) 
+void print_meminfo_data(MemRow* head)
 {
-    printf("MemTotal: %ld\nMemFree: %ld\nMemAvail: %ld\nBuffers: %ld\nCached: %ld\nUsed: %ld\n", 
-        info.mem_total, info.mem_free, info.mem_avail, info.buffers, info.cached, info.used);
+    for (MemRow* current = head; current->next; current = current->next)
+    {
+        printf("%s:\t %ld kB \n", current->data, current->value);
+    }
+}
+
+void free_meminfo_list(MemRow* head)
+{
+    MemRow* current = head;
+    while (current != NULL)
+    {
+        MemRow* next = current->next;
+        free(current);
+        current = next;
+    }
 }
