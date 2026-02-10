@@ -15,50 +15,64 @@ typedef struct MemHM {
     MemRow** arr;
 } MemHM;
 
-MemRow* fetch_mem_data(char *filename);
+MemHM* fetch_mem_data(char *filename, int capacity);
+MemHM* create_mem_hm(int capacity);
 void insert_element(MemHM* mp, char* key, unsigned long value);
 unsigned long search_element(MemHM* mp, char* key);
 void delete_element(MemHM* mp, char* key);
 int hash_function(MemHM* mp, char* key);
 void print_meminfo_data(MemRow* head);
 void free_meminfo_list(MemRow* head);
+void clean_mem_hm(MemHM* mp);
+void print_mem_hm(MemHM* mp);
 
 int main(int argc, char* argv[])
 {
-    MemRow* list_head = fetch_mem_data("/proc/meminfo");
-    print_meminfo_data(list_head);
-    free_meminfo_list(list_head);
+    MemHM* dict = fetch_mem_data("/proc/meminfo", 128);
+    //MemHM* dict = create_mem_hm(1);
+    //insert_element(dict, "Hola", 321);
+    //insert_element(dict, "PLAPLA", 123);
+    print_mem_hm(dict);
+    clean_mem_hm(dict);
     return 0;
 }
 
-MemRow* fetch_mem_data(char *filename)
+MemHM* fetch_mem_data(char *filename, int capacity)
 {
     FILE* info_stream = fopen(filename, "r");
-    MemRow* head = (MemRow *)malloc(sizeof(MemRow));
-    head->previous = NULL;
-    MemRow* current = head;
+    MemHM* dict = create_mem_hm(capacity);
+    MemRow* row = (MemRow *)malloc(sizeof(MemRow));
     char buffer[256];
     int actual_l = 0;
     if (info_stream == NULL) return NULL;
     while (fgets(buffer, sizeof(buffer), info_stream)) {
-        if (sscanf(buffer, "%64[^:]: %ld kB", current->data, &current->value))
+        if (sscanf(buffer, "%63[^:]: %ld kB", row->data, &row->value))
         {
-            current->next = (MemRow *)malloc(sizeof(MemRow));
-            current = current->next;
-            current->next = NULL;
+            insert_element(dict, row->data, row->value);
         } else {
             printf("Failed to format line #: %d\n", actual_l);
         }
         actual_l++;
     }
     fclose(info_stream);
-    return head;
+    free(row);
+    return dict;
+}
+
+MemHM* create_mem_hm(int capacity) {
+    MemHM* mp = (MemHM*)malloc(sizeof(MemHM));
+    if (!mp) return NULL;
+    mp->capacity = capacity;
+    mp->num_of_elements = 0;
+    mp->arr = (MemRow**)calloc(capacity, sizeof(MemRow*));
+    return mp;
 }
 
 void insert_element(MemHM* mp, char* key, unsigned long value)
 {
     int indice = hash_function(mp, key);
     MemRow* newRow = (MemRow *)malloc(sizeof(MemRow));
+    if (!newRow) return;
     strcpy(newRow->data, key);
     newRow->value = value;
     newRow->previous = NULL;
@@ -70,17 +84,30 @@ void insert_element(MemHM* mp, char* key, unsigned long value)
         newRow->next = mp->arr[indice];
         mp->arr[indice] = newRow;
     }
+    mp->num_of_elements++;
 }
 
 void delete_element(MemHM* mp, char* key)
 {
     int indice = hash_function(mp, key);
     MemRow* previous;
-    MemRow* actual;
+    MemRow* actual = mp->arr[indice];
+    MemRow* sig = actual->next;
     while (actual != NULL) {
         if (strcmp(actual->data, key) == 0) {
-            
+            if (actual == mp->arr[indice]) {
+                mp->arr[indice] = actual->next;
+                mp->arr[indice]->previous = NULL;
+            } else {
+                previous->next = actual->next;
+                sig -> previous = actual->previous;
+            }
+            free(actual);
+            break;
         }
+        previous = actual;
+        actual = actual->next;
+        sig = actual->next;
     }
 }
 
@@ -94,6 +121,31 @@ unsigned long search_element(MemHM* mp, char* key)
     }
     printf("Key Error: Key %s does NOT exist", key);
     return 0;
+}
+
+void clean_mem_hm(MemHM* mp)
+{
+    if (mp == NULL) return;
+    for (int i = 0; i< mp->capacity; i++)
+    {
+        if (mp->arr[i] != NULL)
+        {
+            free_meminfo_list(mp->arr[i]);
+        }
+    }
+    free(mp->arr);
+    free(mp);
+}
+
+void print_mem_hm(MemHM* mp)
+{
+    for (int i = 0; i< mp->capacity; i++)
+    {
+        if (mp->arr[i] != NULL)
+        {
+            print_meminfo_data(mp->arr[i]);
+        }
+    }
 }
 
 int hash_function(MemHM* mp, char* key)
@@ -111,7 +163,7 @@ int hash_function(MemHM* mp, char* key)
 
 void print_meminfo_data(MemRow* head)
 {
-    for (MemRow* current = head; current->next; current = current->next)
+    for (MemRow* current = head; current; current = current->next)
     {
         printf("%s:\t %ld kB \n", current->data, current->value);
     }
