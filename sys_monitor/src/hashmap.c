@@ -1,63 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <Python.h>
-
-typedef struct MemRow {
-    struct MemRow* previous;
-    char data[64];
-    unsigned long value;
-    struct MemRow* next;
-} MemRow;
-
-typedef struct MemHM {
-    int num_of_elements;
-    int capacity;
-    MemRow** arr;
-} MemHM;
-
-MemHM* fetch_mem_data(char *filename, int capacity);
-MemHM* create_mem_hm(int capacity);
-void insert_element(MemHM* mp, char* key, unsigned long value);
-unsigned long search_element(MemHM* mp, char* key);
-void delete_element(MemHM* mp, char* key);
-int hash_function(MemHM* mp, char* key);
-void print_meminfo_data(MemRow* head);
-void free_meminfo_list(MemRow* head);
-void clean_mem_hm(MemHM* mp);
-void print_mem_hm(MemHM* mp);
-
-int main(int argc, char* argv[])
-{
-    MemHM* dict = fetch_mem_data("/proc/meminfo", 128);
-    //MemHM* dict = create_mem_hm(1);
-    //insert_element(dict, "Hola", 321);
-    //insert_element(dict, "PLAPLA", 123);
-    print_mem_hm(dict);
-    clean_mem_hm(dict);
-    return 0;
-}
-
-MemHM* fetch_mem_data(char *filename, int capacity)
-{
-    FILE* info_stream = fopen(filename, "r");
-    MemHM* dict = create_mem_hm(capacity);
-    MemRow* row = (MemRow *)malloc(sizeof(MemRow));
-    char buffer[256];
-    int actual_l = 0;
-    if (info_stream == NULL) return NULL;
-    while (fgets(buffer, sizeof(buffer), info_stream)) {
-        if (sscanf(buffer, "%63[^:]: %ld kB", row->data, &row->value))
-        {
-            insert_element(dict, row->data, row->value);
-        } else {
-            printf("Failed to format line #: %d\n", actual_l);
-        }
-        actual_l++;
-    }
-    fclose(info_stream);
-    free(row);
-    return dict;
-}
+#include <string.h>
+#include "../include/metrics.h"
 
 MemHM* create_mem_hm(int capacity) {
     MemHM* mp = (MemHM*)malloc(sizeof(MemHM));
@@ -150,6 +93,7 @@ void print_mem_hm(MemHM* mp)
 
 int hash_function(MemHM* mp, char* key)
 {
+    //Taken from geeks for geeks
     int arrayIndex;
     int sum = 0, factor = 31;
     for (int i = 0; i < strlen(key); i++)
