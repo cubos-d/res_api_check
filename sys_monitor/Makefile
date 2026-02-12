@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude -g 
+CFLAGS = -Wall -Iinclude -g -shared -fPIC
 
-TARGET = monitor
+TARGET = monitor.so
 
 SRCS = src/main.c src/hashmap.c src/parser.c
 

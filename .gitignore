@@ -12,3 +12,4 @@ blueprint.txt
 examples.txt
 *.out
 *.o
+*.so

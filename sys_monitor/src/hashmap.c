@@ -27,6 +27,17 @@ void insert_element(MemHM* mp, char* key, unsigned long value)
         newRow->next = mp->arr[indice];
         mp->arr[indice] = newRow;
     }
+    if (mp->num_of_elements == 0) { 
+        mp->dic_head = newRow;
+        newRow->dic_previous = NULL;
+        newRow->dic_next = NULL;
+        mp->dic_actual = newRow;
+    } else {
+        newRow->dic_previous = mp->dic_actual;
+        mp->dic_actual->dic_next = newRow;
+        mp->dic_actual = newRow;
+        newRow->dic_next = NULL;
+    }
     mp->num_of_elements++;
 }
 
@@ -36,6 +47,7 @@ void delete_element(MemHM* mp, char* key)
     MemRow* previous;
     MemRow* actual = mp->arr[indice];
     MemRow* sig = actual->next;
+    MemRow* target;
     while (actual != NULL) {
         if (strcmp(actual->data, key) == 0) {
             if (actual == mp->arr[indice]) {
@@ -45,13 +57,25 @@ void delete_element(MemHM* mp, char* key)
                 previous->next = actual->next;
                 sig -> previous = actual->previous;
             }
-            free(actual);
+            target = actual;
             break;
         }
         previous = actual;
         actual = actual->next;
         sig = actual->next;
     }
+    if (target->dic_previous) {
+        target->dic_previous->dic_next = target->dic_next;
+    } else {
+        mp->dic_head = target->dic_next;
+    }
+
+    if (target->dic_next) {
+        target->dic_next->dic_previous = target->dic_previous;
+    } else {
+        mp->dic_actual = target->dic_previous;
+    }
+    free(target);
 }
 
 unsigned long search_element(MemHM* mp, char* key)
@@ -69,12 +93,12 @@ unsigned long search_element(MemHM* mp, char* key)
 void clean_mem_hm(MemHM* mp)
 {
     if (mp == NULL) return;
-    for (int i = 0; i< mp->capacity; i++)
+    MemRow* current = mp->dic_head;
+    while (current != NULL)
     {
-        if (mp->arr[i] != NULL)
-        {
-            free_meminfo_list(mp->arr[i]);
-        }
+        MemRow* next = current->dic_next;
+        free(current);
+        current = next;
     }
     free(mp->arr);
     free(mp);
@@ -82,12 +106,9 @@ void clean_mem_hm(MemHM* mp)
 
 void print_mem_hm(MemHM* mp)
 {
-    for (int i = 0; i< mp->capacity; i++)
+    for (MemRow* current = mp->dic_head; current; current = current->dic_next)
     {
-        if (mp->arr[i] != NULL)
-        {
-            print_meminfo_data(mp->arr[i]);
-        }
+        printf("%s:\t %ld kB \n", current->data, current->value);
     }
 }
 
@@ -103,23 +124,4 @@ int hash_function(MemHM* mp, char* key)
     }
     arrayIndex = sum;
     return arrayIndex;
-}
-
-void print_meminfo_data(MemRow* head)
-{
-    for (MemRow* current = head; current; current = current->next)
-    {
-        printf("%s:\t %ld kB \n", current->data, current->value);
-    }
-}
-
-void free_meminfo_list(MemRow* head)
-{
-    MemRow* current = head;
-    while (current != NULL)
-    {
-        MemRow* next = current->next;
-        free(current);
-        current = next;
-    }
 }
