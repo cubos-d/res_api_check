@@ -1,5 +1,7 @@
+from sys_monitor import monitor
 def main():
-    print("Hello from resources-checker!")
+    dic_mem = monitor.get_memory_info()
+    print(dic_mem)
 
 
 if __name__ == "__main__":
