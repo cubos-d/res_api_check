@@ -3,7 +3,7 @@ CFLAGS = -Wall -Iinclude -g -shared -fPIC
 
 TARGET = monitor.so
 
-SRCS = src/main.c src/hashmap.c src/parser.c
+SRCS = src/main.c src/hashmap.c src/parser.c src/cpustats.c
 
 OBJS = $(SRCS:.c=.o)
 
