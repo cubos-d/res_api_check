@@ -1,5 +1,6 @@
 from sys_monitor import monitor
 
+
 def main():
     dic_mem = monitor.get_memory_info()
     dic_cpu = monitor.get_cpu_info()
