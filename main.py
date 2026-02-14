@@ -2,6 +2,7 @@ from sys_monitor import monitor
 
 
 def main():
+    # Hello!
     dic_mem = monitor.get_memory_info()
     dic_cpu = monitor.get_cpu_info()
     print(dic_mem)
