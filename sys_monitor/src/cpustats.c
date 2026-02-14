@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../include/metrics.h"
 
 CpuData* create_cpu_matrix(int numcores)
@@ -26,14 +27,15 @@ CpuData* fetch_cpu_data()
             cpu->total, cpu->total+1, cpu->total+2, cpu->total+3, cpu->total+4,
             cpu->total+5, cpu->total+6, cpu->total+7, cpu->total+8, cpu->total+9);
     }
-    unsigned long row_data[10];
-    for (int i = 0; i < cpu->n_cores; i++) {
-        if (fgets(buffer, sizeof(buffer), info_stream)) {
+    int i = 0;
+    while (i < cpu->n_cores && fgets(buffer, sizeof(buffer), info_stream)) {
+        if (strncmp(buffer, "cpu", 3) == 0) {
             int cpu_id;
             sscanf(buffer, "cpu%d %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld", 
                 &cpu_id, 
                 cpu->mat[i], cpu->mat[i]+1, cpu->mat[i]+2, cpu->mat[i]+3, cpu->mat[i]+4,
                 cpu->mat[i]+5, cpu->mat[i]+6, cpu->mat[i]+7, cpu->mat[i]+8, cpu->mat[i]+9);
+            i++;
         }
     }
     fclose(info_stream);
