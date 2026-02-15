@@ -8,6 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+#Other
 blueprint.txt
 examples.txt
 *.out
