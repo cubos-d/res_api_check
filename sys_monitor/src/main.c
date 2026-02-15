@@ -14,7 +14,7 @@
 
 PyObject* get_cpuinfo(PyObject* self, PyObject *Py_UNUSED(ignored))
 {
-    //TODO take notes in the notebook. Here you learned a lot. 
+    //TODO take notes in the notebook. Here you learned a lot.
     CpuData* cpu = fetch_cpu_data();
     if (!cpu) {
         PyErr_SetString(PyExc_RuntimeError, "Could not read /proc/stat");
@@ -40,7 +40,7 @@ PyObject* get_cpuinfo(PyObject* self, PyObject *Py_UNUSED(ignored))
             sprintf(err_buffer, "Couldn't allocate array of elements in %dth cpu\n", i);
             PyErr_SetString(PyExc_IndexError, err_buffer);
         }
-    } 
+    }
 
     for (int j = 0; j < 10; j++)
     {
@@ -54,14 +54,14 @@ PyObject* get_cpuinfo(PyObject* self, PyObject *Py_UNUSED(ignored))
     PyObject *total_key = PyUnicode_FromString("total_details");
     PyObject *mat_key = PyUnicode_FromString("cpu_details");
     if (PyDict_SetItem(dict_final, total_key, total_vec) == -1) {
-        PyErr_SetString(PyExc_IndexError, "Couldn't allocate total item in final dict");
+        PyErr_SetString(PyExc_KeyError, "Couldn't allocate total item in final dict");
     }
     if (PyDict_SetItem(dict_final, mat_key, cpus_matrix) == -1) {
-        PyErr_SetString(PyExc_IndexError, "Couldn't allocate matrix item in final dict");
+        PyErr_SetString(PyExc_KeyError, "Couldn't allocate matrix item in final dict");
     }
     Py_DECREF(total_key);
     Py_DECREF(mat_key);
-    Py_DECREF(total_vec); 
+    Py_DECREF(total_vec);
     Py_DECREF(cpus_matrix);
     clean_cpu_data(cpu);
     return dict_final;
@@ -86,7 +86,7 @@ PyObject* get_meminfo(PyObject *self, PyObject *Py_UNUSED(ignored))
         char err_buffer[128];
         sprintf(err_buffer, "Couldn't Allocate key AvailableFraction with value %.2f in dict\n", p_available);
         PyErr_SetString(PyExc_KeyError, err_buffer);
-    } 
+    }
     Py_DECREF(first_key);
     Py_DECREF(first_value);
     for (MemRow* act = dict->dic_head; act; act = act->dic_next)
@@ -97,7 +97,7 @@ PyObject* get_meminfo(PyObject *self, PyObject *Py_UNUSED(ignored))
             char err_buffer[128];
             sprintf(err_buffer, "Couldn't Allocate key %s with value %ld in dict\n",act->data, act->value);
             PyErr_SetString(PyExc_KeyError, err_buffer);
-        } 
+        }
         Py_DECREF(act_key);
         Py_DECREF(act_value);
     }
