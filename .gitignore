@@ -15,3 +15,5 @@ examples.txt
 *.out
 *.o
 *.so
+reference_files/
+wheelhouse/

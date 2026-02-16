@@ -1,13 +1,28 @@
 [project]
-name = "resources-checker"
+name = "resource_api_monitor"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple API to check the cpu and memory usage of an instance"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cibuildwheel>=3.3.1",
     "fastapi>=0.129.0",
+    "setuptools>=82.0.0",
     "uvicorn>=0.40.0",
 ]
+
+[tool.cibuildwheel]
+build-frontend = "build[uv]"
+build = "cp313-manylinux_x86_64 cp314-manylinux_x86_64"
+enable = ["cpython-prerelease"]
+container-engine = "podman"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
@@ -15,3 +30,6 @@ dev = [
     "pre-commit>=4.5.1",
     "ruff>=0.15.1",
 ]
+
+[project.scripts]
+monitor-server = "sys_monitor.api:start_server"

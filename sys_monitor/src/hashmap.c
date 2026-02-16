@@ -27,7 +27,7 @@ void insert_element(MemHM* mp, char* key, unsigned long value)
         newRow->next = mp->arr[indice];
         mp->arr[indice] = newRow;
     }
-    if (mp->num_of_elements == 0) { 
+    if (mp->num_of_elements == 0) {
         mp->dic_head = newRow;
         newRow->dic_previous = NULL;
         newRow->dic_next = NULL;
@@ -117,7 +117,7 @@ int hash_function(MemHM* mp, char* key)
     //Taken from geeks for geeks
     int arrayIndex;
     int sum = 0, factor = 31;
-    for (int i = 0; i < strlen(key); i++)
+    for (int i = 0; i < (int)strlen(key); i++)
     {
         sum = ((sum % mp->capacity) + (((int)key[i])*factor)%mp->capacity) % mp->capacity;
         factor = ((factor % __INT16_MAX__)*(31% __INT16_MAX__)) % __INT16_MAX__;
