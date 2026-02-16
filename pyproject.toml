@@ -1,6 +1,6 @@
 [project]
 name = "resource_api_monitor"
-version = "0.1.0"
+version = "0.0.1"
 description = "A simple API to check the cpu and memory usage of an instance"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -29,6 +29,7 @@ dev = [
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
     "ruff>=0.15.1",
+    "twine>=6.2.0",
 ]
 
 [project.scripts]
