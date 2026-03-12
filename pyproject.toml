@@ -5,9 +5,7 @@ description = "A simple API to check the cpu and memory usage of an instance"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "cibuildwheel>=3.3.1",
     "fastapi>=0.129.0",
-    "setuptools>=82.0.0",
     "uvicorn>=0.40.0",
 ]
 
@@ -26,10 +24,7 @@ build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.19.1",
     "pre-commit>=4.5.1",
-    "ruff>=0.15.1",
-    "twine>=6.2.0",
 ]
 
 [project.scripts]
